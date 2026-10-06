@@ -3,10 +3,12 @@
 namespace MediaWiki\Extension\ImageMetadataSanitizer;
 
 use MediaWiki\FileRepo\File\LocalFile;
+use MediaWiki\FileRepo\FileRepo;
 use MediaWiki\Logger\LoggerFactory;
 use MediaWiki\MediaWikiServices;
 use MediaWiki\Status\Status;
 use MediaWiki\Utils\MWFileProps;
+use Wikimedia\FileBackend\FileBackend;
 use Wikimedia\FileBackend\FSFile\FSFile;
 
 class SanitizingLocalFile extends LocalFile {
@@ -15,6 +17,22 @@ class SanitizingLocalFile extends LocalFile {
 		$createDummyRevision = true, $revert = false
 	) {
 		$srcPath = $src instanceof FSFile ? $src->getPath() : $src;
+		$uploadSource = $src;
+		$localCopy = null;
+
+		if ( is_string( $srcPath )
+			&& ( FileRepo::isVirtualUrl( $srcPath ) || FileBackend::isStoragePath( $srcPath ) )
+		) {
+			$localCopy = $this->getRepo()->getLocalCopy( $srcPath );
+			if ( !$localCopy instanceof FSFile ) {
+				LoggerFactory::getInstance( 'ImageMetadataSanitizer' )->error(
+					'Image upload rejected because its virtual source could not be materialized.'
+				);
+
+				return Status::newFatal( 'imagemetadatasanitizer-failed' );
+			}
+			$srcPath = $localCopy->getPath();
+		}
 
 		if ( !is_string( $srcPath ) || !is_file( $srcPath ) ) {
 			return parent::upload(
@@ -47,6 +65,9 @@ class SanitizingLocalFile extends LocalFile {
 			try {
 				if ( $sanitizer->sanitize( $srcPath, $mime ) ) {
 					$currentProps = $fileProps->getPropsFromPath( $srcPath, true );
+					if ( $localCopy !== null ) {
+						$uploadSource = $srcPath;
+					}
 				}
 			} catch ( SanitizationException $exception ) {
 				LoggerFactory::getInstance( 'ImageMetadataSanitizer' )->error(
@@ -59,7 +80,7 @@ class SanitizingLocalFile extends LocalFile {
 		}
 
 		return parent::upload(
-			$src,
+			$uploadSource,
 			$comment,
 			$pageText,
 			$flags,
