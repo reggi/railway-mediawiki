@@ -8,5 +8,9 @@
   "engine": {
     "package": "knitto",
     "version": "0.2.0"
+  },
+  "metadata": {
+    "name": "railway-mediawiki",
+    "description": "Railway infrastructure for MediaWiki"
   }
 }
