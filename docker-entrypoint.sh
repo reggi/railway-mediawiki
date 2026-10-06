@@ -95,4 +95,14 @@ php maintenance/run.php update --quick
 
 unset MW_ADMIN_PASSWORD
 
+if [ -e /etc/apache2/mods-enabled/mpm_event.load ]; then
+	a2dismod mpm_event
+fi
+
+if [ -e /etc/apache2/mods-enabled/mpm_worker.load ]; then
+	a2dismod mpm_worker
+fi
+
+a2enmod mpm_prefork
+
 exec apache2-foreground

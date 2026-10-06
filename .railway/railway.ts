@@ -8,22 +8,19 @@ if (!packageName) {
   throw new Error('package.json#name is required; resolve Knitto inputs before planning')
 }
 
-export default defineRailway(context => {
+export default defineRailway(() => {
   const database = postgres('Postgres')
   const uploads = volume('MediaWiki uploads', {
     alerts: {usage: {'80': {}, '95': {}, '100': {}}},
     allowOnlineResize: true,
     sizeMB: 5000,
   })
-  const domain = `${packageName}-${context.randomString('public-domain', 4)}.up.railway.app`
-
   const mediawiki = service('MediaWiki', {
     source: github('reggi/railway-mediawiki'),
     build: {
       builder: 'DOCKERFILE',
       dockerfilePath: 'Dockerfile',
     },
-    domains: [domain],
     deploy: {
       restartPolicyMaxRetries: 10,
       restartPolicyType: 'ON_FAILURE',
