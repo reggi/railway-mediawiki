@@ -1,0 +1,33 @@
+{
+  "name": "ImageMetadataSanitizer",
+  "version": "1.0.0",
+  "author": ["Tea Reggi"],
+  "url": "https://github.com/reggi/railway-mediawiki",
+  "descriptionmsg": "imagemetadatasanitizer-desc",
+  "license-name": "MIT",
+  "type": "other",
+  "requires": {
+    "MediaWiki": ">= 1.43"
+  },
+  "AutoloadClasses": {
+    "MediaWiki\\Extension\\ImageMetadataSanitizer\\ImageMetadataSanitizer": "src/ImageMetadataSanitizer.php",
+    "MediaWiki\\Extension\\ImageMetadataSanitizer\\SanitizationException": "src/SanitizationException.php",
+    "MediaWiki\\Extension\\ImageMetadataSanitizer\\SanitizingLocalFile": "src/SanitizingLocalFile.php",
+    "MediaWiki\\Extension\\ImageMetadataSanitizer\\SanitizingLocalRepo": "src/SanitizingLocalRepo.php"
+  },
+  "MessagesDirs": {
+    "ImageMetadataSanitizer": ["i18n"]
+  },
+  "config": {
+    "ImageMetadataSanitizerExifToolPath": {
+      "value": "/usr/bin/exiftool"
+    },
+    "ImageMetadataSanitizerImageMagickPath": {
+      "value": "/usr/bin/mogrify"
+    },
+    "ImageMetadataSanitizerCommandTimeout": {
+      "value": 30
+    }
+  },
+  "manifest_version": 2
+}

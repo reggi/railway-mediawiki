@@ -51,6 +51,9 @@ $wgEnableUploads = true;
 $wgUploadDirectory = '/var/www/html/images';
 $wgUploadPath = '/images';
 
+wfLoadExtension( 'ImageMetadataSanitizer' );
+$wgLocalFileRepo['class'] = MediaWiki\Extension\ImageMetadataSanitizer\SanitizingLocalRepo::class;
+
 $wgSecretKey = $requiredEnvironmentVariable( 'MW_SECRET_KEY' );
 $wgAuthenticationTokenVersion = $environmentVariable( 'MW_AUTH_TOKEN_VERSION', '1' );
 $wgUpgradeKey = $requiredEnvironmentVariable( 'MW_UPGRADE_KEY' );

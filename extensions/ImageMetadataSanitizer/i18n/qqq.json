@@ -1,0 +1,7 @@
+{
+  "@metadata": {
+    "authors": ["Tea Reggi"]
+  },
+  "imagemetadatasanitizer-desc": "{{desc|name=ImageMetadataSanitizer|url=https://github.com/reggi/railway-mediawiki}}",
+  "imagemetadatasanitizer-failed": "Upload error shown when private image metadata cannot be removed and verified."
+}

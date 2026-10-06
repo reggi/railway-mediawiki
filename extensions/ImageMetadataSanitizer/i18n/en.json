@@ -1,0 +1,7 @@
+{
+  "@metadata": {
+    "authors": ["Tea Reggi"]
+  },
+  "imagemetadatasanitizer-desc": "Removes private metadata from image uploads before storage",
+  "imagemetadatasanitizer-failed": "The image upload was rejected because its private metadata could not be removed safely."
+}
