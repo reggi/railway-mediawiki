@@ -68,6 +68,17 @@ define( 'NS_PUBLIC_TALK', 3001 );
 $wgExtraNamespaces[NS_PUBLIC] = 'Public';
 $wgExtraNamespaces[NS_PUBLIC_TALK] = 'Public_talk';
 
+$wgHooks['BeforePageDisplay'][] = static function (
+	MediaWiki\Output\OutputPage $outputPage,
+	MediaWiki\Skin\Skin $skin
+): void {
+	$title = $outputPage->getTitle();
+
+	if ( $title->getNamespace() === NS_PUBLIC ) {
+		$outputPage->setPageTitle( $title->getText() );
+	}
+};
+
 $wgCookieSecure = str_starts_with( $wgServer, 'https://' );
 
 wfLoadSkin( 'Vector' );
