@@ -1,6 +1,5 @@
 {
   "name": "railway-mediawiki",
-  "version": "0.2.0",
   "private": true,
   "description": "Railway infrastructure for MediaWiki",
   "type": "module",
@@ -15,6 +14,7 @@
     "test:quality": "npm run format:check && npm run package:check && npm run typecheck",
     "typecheck": "tsc --noEmit"
   },
+  "prettier": "@github/prettier-config",
   "devDependencies": {
     "@github/prettier-config": "0.0.6",
     "@types/node": "26.4.1",

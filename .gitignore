@@ -1,8 +1,4 @@
 .DS_Store
 .env
-.env.*
-!.env.example
 node_modules/
 railway-plan.json
-LocalSettings.local.php
-images/
