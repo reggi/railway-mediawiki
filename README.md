@@ -34,7 +34,7 @@ The MediaWiki service receives `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, and `
 
 Anonymous users cannot read or edit normal pages, and public account creation is disabled. The login page remains available. Signed in users can read and edit using standard MediaWiki permissions.
 
-Pages in the `Public:` namespace can be read anonymously but can still only be edited by signed in users. Publish a page by creating it under a title such as `Public:About` or by moving an existing page into the `Public:` namespace.
+Pages in the `Public:` namespace can be read anonymously but can still only be edited by signed in users. Publish a page by creating it under a title such as `Public:About` or by moving an existing page into the `Public:` namespace. The namespace remains in the canonical URL for access control, but the visible heading and browser title show only the page name.
 
 ## Custom domain
 
