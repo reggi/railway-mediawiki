@@ -26,6 +26,8 @@ $wgSitename = $environmentVariable( 'MW_SITE_NAME', 'MediaWiki' );
 $wgMetaNamespace = str_replace( ' ', '_', $wgSitename );
 $wgScriptPath = '';
 $wgResourceBasePath = $wgScriptPath;
+$wgArticlePath = '/wiki/$1';
+$wgUsePathInfo = true;
 $wgServer = rtrim( $environmentVariable( 'MW_SERVER', $defaultServer ), '/' );
 
 if ( $wgServer === '' ) {
@@ -59,6 +61,12 @@ $wgGroupPermissions['*']['createaccount'] = false;
 $wgGroupPermissions['user']['read'] = true;
 $wgGroupPermissions['user']['edit'] = true;
 $wgWhitelistRead = [ 'Special:UserLogin' ];
+$wgWhitelistReadRegexp = [ '/^Public:/i' ];
+
+define( 'NS_PUBLIC', 3000 );
+define( 'NS_PUBLIC_TALK', 3001 );
+$wgExtraNamespaces[NS_PUBLIC] = 'Public';
+$wgExtraNamespaces[NS_PUBLIC_TALK] = 'Public_talk';
 
 $wgCookieSecure = str_starts_with( $wgServer, 'https://' );
 

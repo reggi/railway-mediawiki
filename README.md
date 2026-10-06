@@ -8,6 +8,8 @@ The Railway project is defined in `.railway/railway.ts`. It creates one MediaWik
 
 The Dockerfile adds the PostgreSQL PHP extension to the official image. `LocalSettings.php` reads deployment configuration from environment variables, enables uploads, selects Vector 2022, disables public account creation, and requires authentication to read or edit the wiki.
 
+Article links use `/wiki/Page_Title` instead of exposing `index.php` in normal URLs.
+
 ## Deploy
 
 Install dependencies, authenticate the Railway CLI, review the plan, and apply it:
@@ -30,7 +32,9 @@ The MediaWiki service receives `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, and `
 
 ## Privacy
 
-Anonymous users cannot read or edit the wiki, and public account creation is disabled. The login page remains available. Signed in users can read and edit using standard MediaWiki permissions.
+Anonymous users cannot read or edit normal pages, and public account creation is disabled. The login page remains available. Signed in users can read and edit using standard MediaWiki permissions.
+
+Pages in the `Public:` namespace can be read anonymously but can still only be edited by signed in users. Publish a page by creating it under a title such as `Public:About` or by moving an existing page into the `Public:` namespace.
 
 ## Custom domain
 
