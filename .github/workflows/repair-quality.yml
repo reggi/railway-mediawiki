@@ -1,0 +1,83 @@
+name: Repair repository quality
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: repair-repository-quality
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply safe automatic fixes
+        id: fixes
+        run: |
+          npm run format
+          npm run package:fix
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check TypeScript
+        id: typecheck
+        continue-on-error: true
+        run: npm run typecheck
+
+      - name: Create or update repair pull request
+        if: steps.fixes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPAIR_BRANCH: automation/repair-repository-quality
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin "$REPAIR_BRANCH" || true
+          git switch --create "$REPAIR_BRANCH"
+          git add --all
+          git commit -m "chore: repair repository quality"
+          git push --force-with-lease origin "HEAD:$REPAIR_BRANCH"
+
+          if ! gh pr list \
+            --base main \
+            --head "$REPAIR_BRANCH" \
+            --state open \
+            --json number \
+            --jq 'length > 0' | grep -q true; then
+            gh pr create \
+              --base main \
+              --head "$REPAIR_BRANCH" \
+              --title "chore: repair repository quality" \
+              --body "Automated Prettier and package.json ordering fixes after a push to main."
+          fi
+
+      - name: Report unfixable TypeScript errors
+        if: steps.typecheck.outcome == 'failure'
+        run: |
+          echo "::error::TypeScript validation failed and cannot be repaired automatically."
+          exit 1

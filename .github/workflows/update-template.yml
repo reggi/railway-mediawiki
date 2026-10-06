@@ -1,0 +1,118 @@
+name: Update repository template
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Immutable template release tag to pin
+        required: false
+        type: string
+      set:
+        description: JSON object of Knitto input paths and values
+        required: false
+        default: '{}'
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: update-repository-template
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Prepare Knitto update
+        id: update
+        env:
+          KNITTO_REF: ${{ inputs.ref }}
+          KNITTO_SET: ${{ inputs.set }}
+        run: |
+          ref_args=()
+          if [ -n "$KNITTO_REF" ]; then
+            ref_args=(--ref "$KNITTO_REF")
+          fi
+          npx --yes --package="knitto-gh@latest" -- \
+            knitto-gh "${ref_args[@]}" update "$GITHUB_WORKSPACE" \
+              --set-json "$KNITTO_SET" \
+              --body-file "$RUNNER_TEMP/knitto-pr-body" \
+              --github-output "$GITHUB_OUTPUT"
+
+      - name: Detect template changes
+        id: changes
+        run: |
+          if git status --short | grep -q .; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create or update template pull request
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          KNITTO_TEMPLATE: ${{ steps.update.outputs.template }}
+          KNITTO_PATH: ${{ steps.update.outputs.path }}
+          KNITTO_REF: ${{ steps.update.outputs.ref }}
+          KNITTO_REVISION: ${{ steps.update.outputs.revision }}
+          KNITTO_DIGEST: ${{ steps.update.outputs.digest }}
+          KNITTO_BODY_FILE: ${{ steps.update.outputs.body_file }}
+        run: |
+          if [ -n "$KNITTO_REVISION" ]; then
+            UPDATE_BRANCH="automation/update-knitto-${KNITTO_REVISION:0:12}"
+          else
+            UPDATE_BRANCH="automation/update-repository-template"
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin "$UPDATE_BRANCH" || true
+          git switch --create "$UPDATE_BRANCH"
+          git add --all
+          git commit -m "chore: update repository template"
+          git push --force-with-lease origin "HEAD:$UPDATE_BRANCH"
+
+          existing_pr="$(gh pr list \
+            --base main \
+            --head "$UPDATE_BRANCH" \
+            --state open \
+            --json number \
+            --jq '.[0].number // empty')"
+          if [ -n "$existing_pr" ]; then
+            gh pr edit "$existing_pr" \
+              --title "chore: update Knitto template" \
+              --body-file "$KNITTO_BODY_FILE"
+          else
+            gh pr create \
+              --base main \
+              --head "$UPDATE_BRANCH" \
+              --title "chore: update Knitto template" \
+              --body-file "$KNITTO_BODY_FILE"
+          fi
+
+          {
+            echo "## Knitto template update"
+            echo
+            echo "- Template: \`$KNITTO_TEMPLATE\`"
+            echo "- Ref: \`$KNITTO_REF\`"
+            echo "- Revision: \`$KNITTO_REVISION\`"
+            echo "- Digest: \`$KNITTO_DIGEST\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Report current state
+        if: steps.changes.outputs.changed == 'false'
+        run: echo "Repository already matches the latest template."

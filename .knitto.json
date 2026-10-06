@@ -1,0 +1,12 @@
+{
+  "source": {
+    "type": "git",
+    "url": "https://github.com/reggi/template-railway.git",
+    "path": ".knitto",
+    "ref": "v0.2.0"
+  },
+  "engine": {
+    "package": "knitto",
+    "version": "0.2.0"
+  }
+}
