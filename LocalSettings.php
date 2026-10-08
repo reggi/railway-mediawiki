@@ -95,6 +95,44 @@ $wgHooks['SkinTemplateNavigation::Universal'][] = static function (
 	unset( $links['namespaces']['talk'] );
 };
 
+$wgHooks['ParserFirstCallInit'][] = static function (
+	MediaWiki\Parser\Parser $parser
+): void {
+	$parser->setHook( 'localvideo', static function ( $input, array $args ): string {
+		$filename = trim( (string)( $args['file'] ?? '' ) );
+		$width = max( 160, min( 1280, (int)( $args['width'] ?? 720 ) ) );
+		$file = MediaWiki\MediaWikiServices::getInstance()
+			->getRepoGroup()
+			->findFile( $filename );
+
+		if ( !$file || $file->getMimeType() !== 'video/mp4' ) {
+			return MediaWiki\Html\Html::element(
+				'span',
+				[ 'class' => 'error' ],
+				'Local MP4 video not found.'
+			);
+		}
+
+		return MediaWiki\Html\Html::rawElement(
+			'video',
+			[
+				'controls' => true,
+				'playsinline' => true,
+				'preload' => 'metadata',
+				'width' => $width,
+				'style' => 'max-width: 100%; height: auto;',
+			],
+			MediaWiki\Html\Html::element(
+				'source',
+				[
+					'src' => $file->getUrl(),
+					'type' => 'video/mp4',
+				]
+			)
+		);
+	} );
+};
+
 $wgHooks['BeforePageDisplay'][] = static function (
 	MediaWiki\Output\OutputPage $outputPage,
 	MediaWiki\Skin\Skin $skin
