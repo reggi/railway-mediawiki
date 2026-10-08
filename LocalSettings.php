@@ -53,6 +53,7 @@ $wgUploadPath = '/images';
 $wgFileExtensions[] = 'mp4';
 
 wfLoadExtension( 'ImageMetadataSanitizer' );
+wfLoadExtension( 'Cite' );
 $wgLocalFileRepo['class'] = MediaWiki\Extension\ImageMetadataSanitizer\SanitizingLocalRepo::class;
 
 $wgSecretKey = $requiredEnvironmentVariable( 'MW_SECRET_KEY' );
