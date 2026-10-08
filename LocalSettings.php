@@ -71,6 +71,29 @@ define( 'NS_PUBLIC_TALK', 3001 );
 $wgExtraNamespaces[NS_PUBLIC] = 'Public';
 $wgExtraNamespaces[NS_PUBLIC_TALK] = 'Public_talk';
 
+$talkNamespaces = [
+	NS_TALK,
+	NS_USER_TALK,
+	NS_PROJECT_TALK,
+	NS_FILE_TALK,
+	NS_MEDIAWIKI_TALK,
+	NS_TEMPLATE_TALK,
+	NS_HELP_TALK,
+	NS_CATEGORY_TALK,
+	NS_PUBLIC_TALK,
+];
+
+foreach ( $talkNamespaces as $talkNamespace ) {
+	$wgNamespaceProtection[$talkNamespace] = [ 'edit-talk' ];
+}
+
+$wgHooks['SkinTemplateNavigation::Universal'][] = static function (
+	$skinTemplate,
+	array &$links
+): void {
+	unset( $links['namespaces']['talk'] );
+};
+
 $wgHooks['BeforePageDisplay'][] = static function (
 	MediaWiki\Output\OutputPage $outputPage,
 	MediaWiki\Skin\Skin $skin
