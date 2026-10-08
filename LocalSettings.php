@@ -116,11 +116,11 @@ $wgHooks['ParserFirstCallInit'][] = static function (
 		return MediaWiki\Html\Html::rawElement(
 			'video',
 			[
+				'class' => 'local-video',
 				'controls' => true,
 				'playsinline' => true,
 				'preload' => 'metadata',
-				'width' => $width,
-				'style' => 'max-width: 100%; height: auto;',
+				'style' => "display: block; width: 100%; max-width: {$width}px; height: auto;",
 			],
 			MediaWiki\Html\Html::element(
 				'source',
