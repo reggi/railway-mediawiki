@@ -99,8 +99,27 @@ $wgHooks['ParserFirstCallInit'][] = static function (
 	MediaWiki\Parser\Parser $parser
 ): void {
 	$parser->setHook( 'localvideo', static function ( $input, array $args ): string {
+		$booleanArgument = static function (
+			string $name,
+			bool $default
+		) use ( $args ): bool {
+			if ( !array_key_exists( $name, $args ) ) {
+				return $default;
+			}
+
+			return !in_array(
+				strtolower( trim( (string)$args[$name] ) ),
+				[ '0', 'false', 'no', 'off' ],
+				true
+			);
+		};
+
 		$filename = trim( (string)( $args['file'] ?? '' ) );
 		$width = max( 160, min( 1280, (int)( $args['width'] ?? 720 ) ) );
+		$autoplay = $booleanArgument( 'autoplay', false );
+		$loop = $booleanArgument( 'loop', false );
+		$muted = $autoplay || $booleanArgument( 'muted', false );
+		$controls = $booleanArgument( 'controls', true );
 		$file = MediaWiki\MediaWikiServices::getInstance()
 			->getRepoGroup()
 			->findFile( $filename );
@@ -117,7 +136,10 @@ $wgHooks['ParserFirstCallInit'][] = static function (
 			'video',
 			[
 				'class' => 'local-video',
-				'controls' => true,
+				'autoplay' => $autoplay,
+				'controls' => $controls,
+				'loop' => $loop,
+				'muted' => $muted,
 				'playsinline' => true,
 				'preload' => 'metadata',
 				'style' => "display: block; width: 100%; max-width: {$width}px; height: auto;",
