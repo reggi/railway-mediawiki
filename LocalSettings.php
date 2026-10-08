@@ -50,6 +50,7 @@ $wgDBmwschema = $environmentVariable( 'MW_DB_SCHEMA', 'mediawiki' );
 $wgEnableUploads = true;
 $wgUploadDirectory = '/var/www/html/images';
 $wgUploadPath = '/images';
+$wgFileExtensions[] = 'mp4';
 
 wfLoadExtension( 'ImageMetadataSanitizer' );
 $wgLocalFileRepo['class'] = MediaWiki\Extension\ImageMetadataSanitizer\SanitizingLocalRepo::class;
