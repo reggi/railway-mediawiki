@@ -101,6 +101,10 @@ $wgHooks['BeforePageDisplay'][] = static function (
 ): void {
 	$title = $outputPage->getTitle();
 
+	$outputPage->addInlineStyle(
+		'#ca-talk, #ca-talk-sticky-header { display: none !important; }'
+	);
+
 	if ( $title->getNamespace() === NS_PUBLIC ) {
 		$outputPage->setPageTitle( $title->getText() );
 	}
