@@ -116,6 +116,11 @@ $wgHooks['ParserFirstCallInit'][] = static function (
 
 		$filename = trim( (string)( $args['file'] ?? '' ) );
 		$width = max( 160, min( 1280, (int)( $args['width'] ?? 720 ) ) );
+		$viewportWidth = max(
+			10,
+			min( 100, (int)( $args['viewport-width'] ?? 50 ) )
+		);
+		$minimumWidth = min( 280, $width );
 		$autoplay = $booleanArgument( 'autoplay', false );
 		$loop = $booleanArgument( 'loop', false );
 		$muted = $autoplay || $booleanArgument( 'muted', false );
@@ -142,7 +147,7 @@ $wgHooks['ParserFirstCallInit'][] = static function (
 				'muted' => $muted,
 				'playsinline' => true,
 				'preload' => 'metadata',
-				'style' => "display: block; width: 100%; max-width: {$width}px; height: auto;",
+				'style' => "display: block; width: clamp({$minimumWidth}px, {$viewportWidth}vw, {$width}px); max-width: 100%; height: auto;",
 			],
 			MediaWiki\Html\Html::element(
 				'source',
