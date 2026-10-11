@@ -42,7 +42,9 @@ Sanitization fails closed. If required tooling is unavailable, processing times 
 
 Anonymous users cannot read or edit normal pages, and public account creation is disabled. The login page remains available. Signed in users can read and edit using standard MediaWiki permissions.
 
-Pages in the `Public:` namespace can be read anonymously but can still only be edited by signed in users. Publish a page by creating it under a title such as `Public:About` or by moving an existing page into the `Public:` namespace. The namespace remains in the canonical URL for access control, but the visible heading and browser title show only the page name.
+Pages in the `Public:` namespace can be read anonymously but can still only be edited by signed in users. Publish a page by creating it under a title such as `Public:About` or by moving an existing page into the `Public:` namespace. Public articles use clean links such as `/wiki/About`, while remaining in the public namespace internally for access control. Canonical and social metadata use the clean URL; `/wiki/Public:About` remains valid. The visible heading and browser title show only the page name.
+
+An existing main-namespace article with the same name keeps its URL and permissions; its public counterpart retains the explicit `Public:` URL. A direct main-namespace redirect to that same public article is treated as a clean alias instead of a collision. Edit/history links and explicit `index.php?title=...` requests keep their namespace so administrative actions remain unambiguous. Moving or deleting a public article removes its clean alias without granting anonymous access to private content.
 
 ## Custom domain
 

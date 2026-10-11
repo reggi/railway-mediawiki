@@ -35,6 +35,7 @@ if ( $wgServer === '' ) {
 }
 
 $wgCanonicalServer = $wgServer;
+$wgEnableCanonicalServerLink = true;
 $wgLanguageCode = $environmentVariable( 'MW_LANGUAGE_CODE', 'en' );
 $wgLocaltimezone = $environmentVariable( 'MW_TIMEZONE', 'UTC' );
 
@@ -54,6 +55,7 @@ $wgFileExtensions[] = 'mp4';
 
 wfLoadExtension( 'ImageMetadataSanitizer' );
 wfLoadExtension( 'Cite' );
+wfLoadExtension( 'PublicArticleUrls' );
 wfLoadExtension( 'SocialCards' );
 wfLoadExtension( 'WikiSEO' );
 $wgWikiSeoEnableAutoDescription = false;

@@ -1,0 +1,27 @@
+{
+  "name": "PublicArticleUrls",
+  "version": "1.0.0",
+  "author": ["Tea Reggi"],
+  "descriptionmsg": "publicarticleurls-desc",
+  "license-name": "MIT",
+  "type": "other",
+  "requires": {
+    "MediaWiki": ">= 1.43"
+  },
+  "AutoloadNamespaces": {
+    "MediaWiki\\Extension\\PublicArticleUrls\\": "src/"
+  },
+  "ExtensionFunctions": ["MediaWiki\\Extension\\PublicArticleUrls\\Hooks::resolveRequest"],
+  "Hooks": {
+    "GetLocalURL::Article": "MediaWiki\\Extension\\PublicArticleUrls\\Hooks::onGetLocalURLArticle"
+  },
+  "MessagesDirs": {
+    "PublicArticleUrls": ["i18n"]
+  },
+  "config": {
+    "PublicArticleUrlsNamespace": {
+      "value": 3000
+    }
+  },
+  "manifest_version": 2
+}

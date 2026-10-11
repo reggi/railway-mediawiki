@@ -53,4 +53,5 @@ if [ "$ready" != true ]; then
 fi
 docker exec --user www-data "$wiki" php extensions/SocialCards/tests/integration.php
 docker exec --user www-data "$wiki" php maintenance/run.php ./extensions/SocialCards/tests/MediaWikiIntegration.php
+docker exec --user www-data "$wiki" php maintenance/run.php ./extensions/PublicArticleUrls/tests/Integration.php
 docker exec --user www-data "$wiki" php maintenance/run.php ./extensions/SocialCards/maintenance/RefreshSocialCards.php
