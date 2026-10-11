@@ -46,7 +46,7 @@ class Integration extends Maintenance {
 
 		foreach ( [ '/', '/index.php', '/wiki/Main_Page', '/wiki/Special:PublicHome' ] as $path ) {
 			$response = $this->request( $path );
-			$this->check( $response['status'] === 200 && str_contains( $response['body'], 'All public articles' ),
+			$this->check( $response['status'] === 200 && str_contains( $response['body'], 'class="public-home"' ),
 				'Anonymous homepage missing at ' . $path );
 			foreach ( [ 'Signed-in homepage sentinel.', 'Homepage private sentinel', 'Private homepage blurb sentinel.',
 				'Homepage moved sentinel', 'Moved private blurb sentinel.', 'Homepage redirect sentinel' ] as $secret ) {
@@ -59,26 +59,40 @@ class Integration extends Maintenance {
 		$this->check( str_contains( $body, 'Actual lead outside infobox.' ) &&
 			!str_contains( $body, 'Caption not the blurb.' ), 'Infobox lead extraction failed.' );
 		$this->check( str_contains( $body, 'href="/wiki/Homepage_SEO_article"' ), 'Directory link is not clean.' );
-		$this->check( $this->titles( $body, 'newly-created' )[0] === 'Z newest homepage article', 'Creation order is wrong.' );
-		$this->check( $this->titles( $body, 'newly-edited' )[0] === 'A edited homepage article', 'Edit order is wrong.' );
+		$titles = $this->titles( $body );
+		$this->check( $titles[0] === 'A edited homepage article' && $titles[1] === 'Z newest homepage article',
+			'Feed does not combine creations and edits in activity order.' );
+		$this->check( count( $titles ) === count( array_unique( $titles ) ), 'Feed contains duplicate articles.' );
+		$this->check( str_contains( $body, 'Created Dec 1, 2099' ) && str_contains( $body, 'Edited Dec 2, 2099' ),
+			'Feed did not distinguish created and edited activity.' );
+		foreach ( [ 'Newly created', 'Newly edited', 'All public articles' ] as $heading ) {
+			$this->check( !str_contains( $body, $heading ), 'Old duplicate section is still present.' );
+		}
 		foreach ( [ '/wiki/Main_Page?action=edit', '/wiki/Main_Page?action=history', '/wiki/Main_Page?oldid=1' ] as $path ) {
-			$this->check( !str_contains( $this->request( $path )['body'], 'All public articles' ),
+			$this->check( !str_contains( $this->request( $path )['body'], 'class="public-home"' ),
 				'Non-view action was replaced by directory.' );
 		}
 
 		for ( $i = 0; $i < 31; $i++ ) {
-			$save( sprintf( 'Public:Directory Page %02d', $i ), "Directory introduction {$i}.", '20260101000000' );
+			$save( sprintf( 'Public:Directory Page %02d', $i ), "Directory introduction {$i}.", '20990101000000' );
 		}
-		$response = $this->request( '/wiki/Special:PublicHome?from=Directory_Page_00' );
-		$titles = $this->titles( $response['body'], 'all-public-articles' );
-		$this->check( count( $titles ) === 30 && $titles[0] === 'Directory Page 00' &&
-			$titles[29] === 'Directory Page 29', 'Alphabetical page size/order failed.' );
-		$this->check( str_contains( $response['body'], 'from=Directory_Page_30' ), 'Next-page cursor is wrong.' );
-		$next = $this->request( '/wiki/Special:PublicHome?from=Directory_Page_30' )['body'];
-		$this->check( $this->titles( $next, 'all-public-articles' )[0] === 'Directory Page 30' &&
-			!in_array( 'Directory Page 29', $this->titles( $next, 'all-public-articles' ), true ), 'Pagination skipped or repeated an article.' );
-		$this->check( $this->request( '/wiki/Special:PublicHome?from=%27%3Cscript%3E' )['status'] === 200,
-			'Cursor input was not safely handled.' );
+		$response = $this->request( '/wiki/Special:PublicHome' );
+		$titles = $this->titles( $response['body'] );
+		$this->check( count( $titles ) === 30 && $titles[2] === 'Directory Page 30' &&
+			$titles[29] === 'Directory Page 03', 'Activity page size or tied timestamp order failed.' );
+		$this->check( str_contains( $response['body'], 'page=2' ), 'Next-page link is wrong.' );
+		$next = $this->request( '/wiki/Special:PublicHome?page=2' )['body'];
+		$nextTitles = $this->titles( $next );
+		$this->check( $nextTitles[0] === 'Directory Page 02' && array_intersect( $titles, $nextTitles ) === [],
+			'Pagination skipped or repeated an article.' );
+		$combined = array_merge( $titles, $nextTitles );
+		for ( $i = 0; $i < 31; $i++ ) {
+			$this->check( in_array( sprintf( 'Directory Page %02d', $i ), $combined, true ), 'Feed skipped an article.' );
+		}
+		foreach ( [ '0', '-1', (string)PHP_INT_MAX ] as $invalid ) {
+			$this->check( $this->request( '/wiki/Special:PublicHome?page=' . $invalid )['status'] === 400,
+				'Invalid feed page did not report an error.' );
+		}
 
 		$login = $this->request( '/wiki/Special:UserLogin' );
 		$xpath = $this->xpath( $login['body'] );
@@ -103,14 +117,14 @@ class Integration extends Maintenance {
 			$loginMessages[] = trim( $node->textContent );
 		}
 		$this->check( str_contains( $home['body'], 'Signed-in homepage sentinel.' ) &&
-			!str_contains( $home['body'], 'All public articles' ), 'Signed-in homepage changed or login failed. Login status: ' .
+			!str_contains( $home['body'], 'class="public-home"' ), 'Signed-in homepage changed or login failed. Login status: ' .
 			$loginResult['status'] . '; login messages: ' . implode( ' ', $loginMessages ) );
 		$this->output( "Public homepage routes, blurbs, ordering, pagination, escaping and anonymous/authenticated privacy tests passed.\n" );
 	}
 
-	private function titles( string $html, string $section ): array {
+	private function titles( string $html ): array {
 		$values = [];
-		foreach ( $this->xpath( $html )->query( '//section[@aria-labelledby="' . $section . '"]//li/h3/a' ) as $node ) {
+		foreach ( $this->xpath( $html )->query( '//ul[@class="public-home-articles"]/li/h3/a' ) as $node ) {
 			$values[] = $node->textContent;
 		}
 		return $values;

@@ -11,8 +11,6 @@ use MediaWiki\Title\Title;
 use RuntimeException;
 
 class SpecialPublicHome extends SpecialPage {
-	private array $articles = [];
-
 	public function __construct() {
 		parent::__construct( 'PublicHome' );
 	}
@@ -23,101 +21,92 @@ class SpecialPublicHome extends SpecialPage {
 		$output->setPageTitle( $this->msg( 'publichome' )->text() );
 		$output->enableClientCache( false );
 		$output->addModuleStyles( 'ext.publicHome' );
+		$page = $this->getRequest()->getInt( 'page', 1 );
+		if ( $page < 1 || $page > intdiv( PHP_INT_MAX, 30 ) ) {
+			$this->getRequest()->response()->statusHeader( 400 );
+			$output->showErrorPage( 'error', 'publichome-invalid-page' );
+			return;
+		}
 		$output->addHTML( Html::openElement( 'div', [ 'class' => 'public-home' ] ) );
 		$output->addHTML( Html::element( 'p', [], $this->msg( 'publichome-intro' )->text() ) );
-		$this->section( 'publichome-created', 'newly-created', $this->query( 'created', 5 ), true );
-		$this->section( 'publichome-edited', 'newly-edited', $this->query( 'edited', 5 ), false );
-
-		$from = $this->getRequest()->getText( 'from' );
-		$rows = $this->query( 'all', 31, $from );
-		$next = count( $rows ) > 30 ? array_pop( $rows )->page_title : null;
-		$this->section( 'publichome-all', 'all-public-articles', $rows, false );
+		$rows = $this->query( $page );
+		$hasNext = count( $rows ) > 30;
+		if ( $hasNext ) {
+			array_pop( $rows );
+		}
+		$this->feed( $rows );
 		$navigation = '';
-		if ( $from !== '' ) {
+		if ( $page > 1 ) {
 			$navigation .= Html::element( 'a', [ 'href' => $this->getPageTitle()->getLocalURL() ],
 				$this->msg( 'publichome-start' )->text() );
 		}
-		if ( $next !== null ) {
+		if ( $hasNext ) {
 			$navigation .= Html::element( 'a', [
-				'href' => $this->getPageTitle()->getLocalURL( [ 'from' => $next ] ),
+				'href' => $this->getPageTitle()->getLocalURL( [ 'page' => $page + 1 ] ),
 			], $this->msg( 'publichome-next' )->text() );
 		}
 		$output->addHTML( Html::rawElement( 'nav', [ 'class' => 'public-home-pagination' ], $navigation ) );
 		$output->addHTML( Html::closeElement( 'div' ) );
 	}
 
-	private function query( string $sort, int $limit, string $from = '' ): array {
+	private function query( int $page ): array {
 		$services = MediaWikiServices::getInstance();
 		$db = $services->getConnectionProvider()->getReplicaDatabase();
 		$query = $db->newSelectQueryBuilder()
 			->select( [
-				'page_id', 'page_title', 'page_latest', 'latest.rev_timestamp AS edited',
-				'MIN(first.rev_timestamp) AS created',
+				'page_id', 'latest.rev_timestamp AS edited', 'latest.rev_parent_id',
 			] )
 			->from( 'page' )
 			->join( 'revision', 'latest', 'latest.rev_id = page_latest' )
-			->join( 'revision', 'first', 'first.rev_page = page_id' )
 			->where( [
 				'page_namespace' => $services->getMainConfig()->get( 'PublicHomeNamespace' ),
 				'page_is_redirect' => 0,
 			] )
-			->groupBy( [ 'page_id', 'page_title', 'page_latest', 'latest.rev_timestamp' ] );
-		if ( $sort === 'all' ) {
-			if ( $from !== '' ) {
-				$query->where( $db->expr( 'page_title', '>=', $from ) );
-			}
-			$query->orderBy( 'page_title' );
-		} else {
-			if ( $sort === 'edited' ) {
-				$query->where( $db->expr( 'latest.rev_parent_id', '!=', 0 ) );
-			}
-			$query->orderBy( $sort, 'DESC' )->orderBy( 'page_title' );
-		}
-		return iterator_to_array( $query->limit( $limit )->caller( __METHOD__ )->fetchResultSet(), false );
+			->orderBy( 'latest.rev_timestamp', 'DESC' )
+			->orderBy( 'page_id', 'DESC' )
+			->offset( ( $page - 1 ) * 30 )
+			->limit( 31 );
+		return iterator_to_array( $query->caller( __METHOD__ )->fetchResultSet(), false );
 	}
 
-	private function section( string $message, string $id, array $rows, bool $created ): void {
-		$html = Html::element( 'h2', [ 'id' => $id ], $this->msg( $message )->text() );
+	private function feed( array $rows ): void {
 		$items = '';
 		foreach ( $rows as $row ) {
 			$article = $this->article( $row );
 			if ( $article === null ) {
 				continue;
 			}
-			$date = $created ? $row->created : $row->edited;
+			$date = $row->edited;
 			$items .= Html::rawElement( 'li', [],
 				Html::rawElement( 'h3', [], Html::element( 'a', [ 'href' => $article['url'] ], $article['title'] ) ) .
 				Html::element( 'p', [ 'class' => 'public-home-blurb' ], $article['description'] ) .
 				Html::element( 'time', [
 					'datetime' => wfTimestamp( TS_ISO_8601, $date ),
-				], $this->msg( $created ? 'publichome-date-created' : 'publichome-date-edited',
+				], $this->msg( (int)$row->rev_parent_id === 0 ? 'publichome-date-created' : 'publichome-date-edited',
 					gmdate( 'M j, Y', (int)wfTimestamp( TS_UNIX, $date ) )
 				)->text() )
 			);
 		}
-		$html .= $items === ''
+		$html = $items === ''
 			? Html::element( 'p', [], $this->msg( 'publichome-empty' )->text() )
 			: Html::rawElement( 'ul', [ 'class' => 'public-home-articles' ], $items );
-		$this->getOutput()->addHTML( Html::rawElement( 'section', [ 'aria-labelledby' => $id ], $html ) );
+		$this->getOutput()->addHTML( $html );
 	}
 
 	private function article( object $row ): ?array {
 		$pageId = (int)$row->page_id;
-		if ( array_key_exists( $pageId, $this->articles ) ) {
-			return $this->articles[$pageId];
-		}
 		$services = MediaWikiServices::getInstance();
 		$title = Title::newFromID( $pageId );
 		$anonymous = $services->getUserFactory()->newAnonymous();
 		if ( !$title || $title->getNamespace() !== $services->getMainConfig()->get( 'PublicHomeNamespace' ) ||
 			!$services->getPermissionManager()->userCan( 'read', $anonymous, $title )
 		) {
-			return $this->articles[$pageId] = null;
+			return null;
 		}
 		$revision = $services->getRevisionLookup()->getRevisionByPageId( $pageId );
 		$content = $revision ? $revision->getContent( 'main' ) : null;
 		if ( !$content || $content->getModel() !== CONTENT_MODEL_WIKITEXT || $content->isRedirect() ) {
-			return $this->articles[$pageId] = null;
+			return null;
 		}
 		$rendered = $services->getRevisionRenderer()->getRenderedRevision( $revision, ParserOptions::newFromAnon() );
 		$output = $rendered ? $rendered->getRevisionParserOutput() : null;
@@ -125,7 +114,7 @@ class SpecialPublicHome extends SpecialPage {
 			throw new RuntimeException( 'Public article introduction is not renderable.' );
 		}
 		$intro = ( new Extractor() )->extract( $output->getRawText() )['description'];
-		return $this->articles[$pageId] = [
+		return [
 			'title' => $title->getText(),
 			'url' => $title->getLocalURL(),
 			'description' => Extractor::description( $intro, $output->getPageProperty( 'description' ) ),
