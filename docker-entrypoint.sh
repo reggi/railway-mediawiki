@@ -105,4 +105,8 @@ fi
 
 a2enmod mpm_prefork
 
+if [ -e /etc/apache2/conf-enabled/short-url.conf ]; then
+	a2disconf short-url
+fi
+
 exec apache2-foreground
