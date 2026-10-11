@@ -1,0 +1,39 @@
+{
+  "name": "PublicHome",
+  "version": "1.0.0",
+  "author": ["Tea Reggi"],
+  "descriptionmsg": "publichome-desc",
+  "license-name": "MIT",
+  "type": "other",
+  "requires": {
+    "MediaWiki": ">= 1.43",
+    "extensions": {
+      "SocialCards": "*"
+    }
+  },
+  "AutoloadNamespaces": {
+    "MediaWiki\\Extension\\PublicHome\\": "src/"
+  },
+  "ExtensionFunctions": ["MediaWiki\\Extension\\PublicHome\\Hooks::resolveRequest"],
+  "SpecialPages": {
+    "PublicHome": "MediaWiki\\Extension\\PublicHome\\SpecialPublicHome"
+  },
+  "MessagesDirs": {
+    "PublicHome": ["i18n"]
+  },
+  "ResourceModules": {
+    "ext.publicHome": {
+      "styles": ["resources/home.css"]
+    }
+  },
+  "ResourceFileModulePaths": {
+    "localBasePath": "",
+    "remoteExtPath": "PublicHome"
+  },
+  "config": {
+    "PublicHomeNamespace": {
+      "value": 3000
+    }
+  },
+  "manifest_version": 2
+}

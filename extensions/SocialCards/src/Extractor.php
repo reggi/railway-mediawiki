@@ -8,6 +8,17 @@ use DOMXPath;
 use RuntimeException;
 
 class Extractor {
+	public static function description( string $intro, mixed $override ): string {
+		if ( is_string( $override ) && trim( $override ) !== '' &&
+			!in_array( strtolower( trim( $override ) ), [ 'auto', 'textextracts' ], true )
+		) {
+			return self::text(
+				html_entity_decode( strip_tags( $override ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ), 240
+			);
+		}
+		return $intro;
+	}
+
 	public static function text( string $text, int $limit ): string {
 		$text = preg_replace( '/\s+/u', ' ', trim( $text ) );
 		if ( $text === null ) {

@@ -47,6 +47,11 @@ $check(
 );
 $check( $extractor->extract( '<h2>Body</h2><p>Not an intro.</p>' )['description'] === '', 'Body became the lead.' );
 $check( mb_strlen( Extractor::text( str_repeat( 'a', 1000 ), 240 ) ) === 240, 'Text limit failed.' );
+$check( Extractor::description( 'Intro.', '<b>Explicit</b> &amp; blurb.' ) === 'Explicit & blurb.',
+	'Explicit description was not normalized.' );
+foreach ( [ false, '', 'auto', 'textextracts' ] as $description ) {
+	$check( Extractor::description( 'Intro.', $description ) === 'Intro.', 'Description fallback failed.' );
+}
 $check(
 	Store::canonical( [ 'z' => [ 'b' => 1, 'a' => 2 ], 'a' => [ 3, 2 ] ] ) ===
 	Store::canonical( [ 'a' => [ 3, 2 ], 'z' => [ 'a' => 2, 'b' => 1 ] ] ),

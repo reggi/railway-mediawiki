@@ -1,0 +1,30 @@
+.public-home-articles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.public-home-articles li {
+  padding-block: 1em;
+  border-bottom: 1px solid var(--border-color-subtle, #eaecf0);
+}
+
+.public-home-articles h3 {
+  margin: 0 0 0.3em;
+  padding: 0;
+}
+
+.public-home-blurb {
+  margin: 0 0 0.4em;
+}
+
+.public-home-articles time {
+  color: var(--color-subtle, #54595d);
+  font-size: 0.85em;
+}
+
+.public-home-pagination {
+  display: flex;
+  gap: 1.5em;
+  margin-block: 1.5em;
+}

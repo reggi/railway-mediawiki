@@ -14,6 +14,8 @@ The Appearance menu and table of contents sidebar are collapsed by default in Ve
 
 Article headings include a small `#` permalink to their section fragment, which readers can follow or copy.
 
+Logged-out homepage visits show a public article directory with the five newest creations, five most recently edited articles, and an alphabetical list paginated in groups of 30. Blurbs use explicit WikiSEO descriptions or the first introductory paragraph, just like social cards. Redirects and private or unreadable pages are excluded. Signed-in users retain the normal Main Page; edit, history, and revision requests are unchanged. The directory is also available at `Special:PublicHome`.
+
 ## Deploy
 
 Install dependencies, authenticate the Railway CLI, review the plan, and apply it:

@@ -54,14 +54,9 @@ class Cards {
 					throw new RuntimeException( 'Article revision is not publicly renderable.' );
 				}
 				$data = ( new Extractor() )->extract( $output->getRawText() );
-				$description = $output->getPageProperty( 'description' );
-				if ( is_string( $description ) && trim( $description ) !== '' &&
-					!in_array( strtolower( trim( $description ) ), [ 'auto', 'textextracts' ], true )
-				) {
-					$data['description'] = Extractor::text(
-						html_entity_decode( strip_tags( $description ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ), 240
-					);
-				}
+				$data['description'] = Extractor::description(
+					$data['description'], $output->getPageProperty( 'description' )
+				);
 				$override = $output->getPageProperty( 'image' );
 				$manual = is_string( $override ) && trim( $override ) !== '';
 				$displayTitle = Extractor::text( $title->getText(), 120 );

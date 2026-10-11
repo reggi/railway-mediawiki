@@ -19,6 +19,7 @@ COPY --chown=www-data:www-data site-resources /var/www/html/site-resources
 COPY --chown=www-data:www-data extensions/ImageMetadataSanitizer /var/www/html/extensions/ImageMetadataSanitizer
 COPY --chown=www-data:www-data extensions/SocialCards /var/www/html/extensions/SocialCards
 COPY --chown=www-data:www-data extensions/PublicArticleUrls /var/www/html/extensions/PublicArticleUrls
+COPY --chown=www-data:www-data extensions/PublicHome /var/www/html/extensions/PublicHome
 COPY --from=social-cards /usr/local/bin/node /usr/local/bin/node
 COPY --from=social-cards /opt/social-cards /opt/social-cards
 RUN curl -fsSL https://codeload.github.com/wikimedia/mediawiki-extensions-WikiSEO/tar.gz/25302acbefe846debf762409dc175bfb8a0689af \
@@ -26,7 +27,7 @@ RUN curl -fsSL https://codeload.github.com/wikimedia/mediawiki-extensions-WikiSE
     && mv /var/www/html/extensions/mediawiki-extensions-WikiSEO-25302acbefe846debf762409dc175bfb8a0689af /var/www/html/extensions/WikiSEO \
     && ln -s /opt/social-cards/generate.mjs /generate \
     && /generate --fingerprint \
-    && find /var/www/html/extensions/SocialCards /var/www/html/extensions/PublicArticleUrls -name '*.php' -exec php -l '{}' ';'
+    && find /var/www/html/extensions/SocialCards /var/www/html/extensions/PublicArticleUrls /var/www/html/extensions/PublicHome -name '*.php' -exec php -l '{}' ';'
 COPY apache-mediawiki.conf /etc/apache2/conf-available/mediawiki.conf
 COPY docker-entrypoint.sh /usr/local/bin/wiki-entrypoint
 RUN a2enmod rewrite \

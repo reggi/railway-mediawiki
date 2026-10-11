@@ -58,6 +58,7 @@ wfLoadExtension( 'Cite' );
 wfLoadExtension( 'PublicArticleUrls' );
 wfLoadExtension( 'SocialCards' );
 wfLoadExtension( 'WikiSEO' );
+wfLoadExtension( 'PublicHome' );
 $wgWikiSeoEnableAutoDescription = false;
 $wgWikiSeoEnableSocialImages = false;
 $wgWikiSeoDisableLogoFallbackImage = true;
@@ -73,6 +74,7 @@ $wgGroupPermissions['*']['createaccount'] = false;
 $wgGroupPermissions['user']['read'] = true;
 $wgGroupPermissions['user']['edit'] = true;
 $wgWhitelistRead = [ 'Special:UserLogin' ];
+$wgWhitelistRead[] = 'Special:PublicHome';
 $wgWhitelistReadRegexp = [ '/^Public:/i' ];
 $wgWhitelistReadRegexp[] = '/^Special:SocialCard(?:\/|$)/';
 

@@ -1,0 +1,13 @@
+{
+  "publichome": "Public articles",
+  "publichome-desc": "A public article directory for the logged-out homepage.",
+  "publichome-intro": "Explore the public articles on this wiki.",
+  "publichome-created": "Newly created",
+  "publichome-edited": "Newly edited",
+  "publichome-all": "All public articles",
+  "publichome-empty": "No public articles to show yet.",
+  "publichome-date-created": "Created $1",
+  "publichome-date-edited": "Edited $1",
+  "publichome-next": "Next articles",
+  "publichome-start": "Back to the beginning"
+}
