@@ -8,7 +8,11 @@ use Throwable;
 
 class SpecialSocialCard extends SpecialPage {
 	public function __construct() {
-		parent::__construct( 'SocialCard', '', false );
+		parent::__construct( 'SocialCard' );
+	}
+
+	public function isListed() {
+		return false;
 	}
 
 	public function execute( $subPage ): void {

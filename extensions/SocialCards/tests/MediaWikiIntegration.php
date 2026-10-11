@@ -119,7 +119,8 @@ class MediaWikiIntegration extends Maintenance {
 
 	private function request( string $path ): array {
 		$context = stream_context_create( [ 'http' => [ 'ignore_errors' => true, 'timeout' => 15 ] ] );
-		$body = file_get_contents( 'http://127.0.0.1:8080' . $path, false, $context );
+		$origin = getenv( 'SOCIAL_CARDS_TEST_ORIGIN' ) ?: 'http://127.0.0.1:8080';
+		$body = file_get_contents( $origin . $path, false, $context );
 		if ( $body === false ) {
 			throw new RuntimeException( 'HTTP validation request failed.' );
 		}

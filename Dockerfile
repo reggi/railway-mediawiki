@@ -28,6 +28,7 @@ RUN curl -fsSL https://codeload.github.com/wikimedia/mediawiki-extensions-WikiSE
 COPY apache-mediawiki.conf /etc/apache2/conf-available/mediawiki.conf
 COPY docker-entrypoint.sh /usr/local/bin/wiki-entrypoint
 RUN a2enmod rewrite \
+    && if [ -e /etc/apache2/conf-enabled/short-url.conf ]; then a2disconf short-url; fi \
     && a2enconf mediawiki \
     && exiftool -ver \
     && mogrify -version \
