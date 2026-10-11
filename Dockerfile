@@ -15,6 +15,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --chown=www-data:www-data LocalSettings.php /var/www/html/LocalSettings.php
+COPY --chown=www-data:www-data site-resources /var/www/html/site-resources
 COPY --chown=www-data:www-data extensions/ImageMetadataSanitizer /var/www/html/extensions/ImageMetadataSanitizer
 COPY --chown=www-data:www-data extensions/SocialCards /var/www/html/extensions/SocialCards
 COPY --chown=www-data:www-data extensions/PublicArticleUrls /var/www/html/extensions/PublicArticleUrls

@@ -1,0 +1,17 @@
+.heading-permalink {
+  margin-inline-start: 0.4em;
+  font-size: 0.75em;
+  font-weight: normal;
+  opacity: 0.5;
+}
+
+.heading-permalink:hover,
+.heading-permalink:focus-visible {
+  opacity: 1;
+}
+
+@media print {
+  .heading-permalink {
+    display: none;
+  }
+}

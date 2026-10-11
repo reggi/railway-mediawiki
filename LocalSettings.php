@@ -178,16 +178,26 @@ $wgHooks['BeforePageDisplay'][] = static function (
 	$outputPage->addInlineStyle(
 		'#ca-talk, #ca-talk-sticky-header { display: none !important; }'
 	);
+	$outputPage->addModules( 'site.headingLinks' );
 
 	if ( $title->getNamespace() === NS_PUBLIC ) {
 		$outputPage->setPageTitle( $title->getText() );
 	}
 };
 
+$wgResourceModules['site.headingLinks'] = [
+	'localBasePath' => __DIR__ . '/site-resources',
+	'remoteBasePath' => $wgScriptPath . '/site-resources',
+	'scripts' => [ 'heading-links.js' ],
+	'styles' => [ 'heading-links.css' ],
+];
+
 $wgCookieSecure = str_starts_with( $wgServer, 'https://' );
 
 wfLoadSkin( 'Vector' );
 $wgDefaultSkin = 'vector-2022';
+$wgDefaultUserOptions['vector-appearance-pinned'] = 0;
+$wgDefaultUserOptions['vector-toc-pinned'] = 0;
 
 $wgEnableEmail = false;
 $wgUseInstantCommons = false;
