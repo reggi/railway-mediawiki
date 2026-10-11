@@ -10,8 +10,10 @@
     "package:fix": "sort-package-json package.json",
     "railway:apply": "railway config apply",
     "railway:plan": "railway config plan",
-    "test": "npm run test:quality",
+    "test": "npm run test:quality && npm run test:social-cards",
     "test:quality": "npm run format:check && npm run package:check && npm run typecheck",
+    "test:social-cards": "npm --prefix social-cards ci --no-audit --no-fund && npm --prefix social-cards test",
+    "test:social-cards:docker": "sh extensions/SocialCards/tests/docker.sh",
     "typecheck": "tsc --noEmit"
   },
   "prettier": "@github/prettier-config",

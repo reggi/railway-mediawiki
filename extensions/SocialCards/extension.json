@@ -1,0 +1,56 @@
+{
+  "name": "SocialCards",
+  "version": "1.0.0",
+  "author": ["Tea Reggi"],
+  "descriptionmsg": "socialcards-desc",
+  "license-name": "MIT",
+  "type": "other",
+  "requires": {
+    "MediaWiki": ">= 1.43",
+    "extensions": {
+      "WikiSEO": ">= 2.7.0"
+    }
+  },
+  "AutoloadNamespaces": {
+    "MediaWiki\\Extension\\SocialCards\\": "src/"
+  },
+  "HookHandlers": {
+    "SocialCards": {
+      "class": "MediaWiki\\Extension\\SocialCards\\Hooks"
+    }
+  },
+  "Hooks": {
+    "PageSaveComplete": "SocialCards",
+    "PageMoveComplete": "SocialCards",
+    "PageDeleteComplete": "SocialCards",
+    "BeforePageDisplay": "SocialCards",
+    "WikiSEOPreAddMetadata": "SocialCards"
+  },
+  "SpecialPages": {
+    "SocialCard": "MediaWiki\\Extension\\SocialCards\\SpecialSocialCard"
+  },
+  "MessagesDirs": {
+    "SocialCards": ["i18n"]
+  },
+  "config": {
+    "SocialCardsNamespace": {
+      "value": 3000
+    },
+    "SocialCardsDirectory": {
+      "value": "/var/www/html/images/social-cards"
+    },
+    "SocialCardsGenerator": {
+      "value": "/generate"
+    },
+    "SocialCardsFingerprint": {
+      "value": "/opt/social-cards/fingerprint"
+    },
+    "SocialCardsImageMagick": {
+      "value": "/usr/bin/convert"
+    },
+    "SocialCardsTimeout": {
+      "value": 15
+    }
+  },
+  "manifest_version": 2
+}

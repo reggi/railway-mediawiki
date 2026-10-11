@@ -1,0 +1,7 @@
+{
+  "@metadata": {
+    "authors": ["Tea Reggi"]
+  },
+  "socialcards-desc": "{{desc|name=SocialCards}}",
+  "socialcard": "Name of the unlisted special page that serves article social images."
+}

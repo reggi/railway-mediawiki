@@ -6,7 +6,7 @@ Reusable Railway deployment for a private MediaWiki instance using the official 
 
 The Railway project is defined in `.railway/railway.ts`. It creates one MediaWiki service from this repository, one managed PostgreSQL database, one persistent volume mounted at `/var/www/html/images`, generated MediaWiki secrets, and generated initial administrator credentials.
 
-The Dockerfile adds the PostgreSQL PHP extension, ExifTool, ImageMagick, and the bundled image metadata sanitizer to the official image. `LocalSettings.php` reads deployment configuration from environment variables, enables uploads, selects Vector 2022, disables public account creation, and requires authentication to read or edit the wiki.
+The Dockerfile adds the PostgreSQL PHP extension, ExifTool, ImageMagick, Node.js 24, WikiSEO, and the bundled image metadata sanitizer and social-card extensions to the official image. `LocalSettings.php` reads deployment configuration from environment variables, enables uploads, selects Vector 2022, disables public account creation, and requires authentication to read or edit the wiki.
 
 Article links use `/wiki/Page_Title` instead of exposing `index.php` in normal URLs.
 
@@ -47,3 +47,43 @@ Pages in the `Public:` namespace can be read anonymously but can still only be e
 ## Custom domain
 
 Attach a custom domain to the MediaWiki service, set `MW_SERVER` to its full HTTPS origin without a trailing slash, and redeploy.
+
+## Article social cards
+
+Saving an anonymously readable `Public:` article automatically generates a 1200 x 630 PNG social card. The card uses the article title without `Public:`, the first introductory paragraph, and the infobox image on a plain white canvas. The canonical host appears below the description in small, muted text; there is no type label, watermark, border, or rounded framing. Both `.infobox` tables and the first right-floating `wikitable` in the lead are supported. Articles without an infobox image use a text-only layout. Long text is bounded and clipped to the card layout.
+
+The bundled `/generate` CLI reads one JSON payload from stdin, uses Satori and `@resvg/resvg-js`, and returns only PNG bytes on stdout. It is not an HTTP server. Local Inter fonts are supplied by the MIT/OFL-licensed `@fontsource/inter` package; its license notices are retained in the installed package. The document icon is defined in the repository template.
+
+MediaWiki core has no standard article blurb field. By default, card text comes from the first substantive paragraph outside the infobox, before the first heading. To supply an editorial blurb instead, add `{{#seo:|description=Your short summary}}`; that description is used for both the card and SEO metadata. Removing it restores the first-paragraph fallback. Card text is normalized and bounded to 240 characters.
+
+PHP hashes canonical render inputs, including the template/dependency/font fingerprint and normalized source image bytes. An unchanged, valid `<sha>.png` is reused without starting Node. PNGs and per-page manifests live in the existing uploads volume. Rendering runs after the article is committed in the save request; failures are logged without undoing the edit. A previously valid card may remain advertised while the article remains public. A failed first render has no article-specific card.
+
+WikiSEO supplies Open Graph metadata, and the integration supplies an explicit Twitter image with `summary_large_image`. No dedicated queue worker is needed: WikiSEO's automatic description and built-in social-image rendering are disabled. The normal MediaWiki job queue is otherwise unchanged.
+
+### Manual override
+
+Upload a complete card using MediaWiki's normal upload interface, then add:
+
+```wikitext
+{{#seo:|image=Uploaded_card.png}}
+```
+
+The local uploaded file replaces the entire automatic card; it is not a background photograph for the template. Removing the parameter resumes automatic generation on the next save. PNG, JPEG, GIF, and WebP files are supported; the first frame is normalized to PNG within 1200 x 1200 while retaining its aspect ratio. Source files are limited to 32 MiB and 40 million pixels. Missing, external, or unsupported image references are logged as errors.
+
+### Refreshing cards
+
+Existing articles are not backfilled during startup. Run the maintenance command inside the MediaWiki container as `www-data`:
+
+```sh
+php maintenance/run.php ./extensions/SocialCards/maintenance/RefreshSocialCards.php
+php maintenance/run.php ./extensions/SocialCards/maintenance/RefreshSocialCards.php --page 'Public:Example'
+php maintenance/run.php ./extensions/SocialCards/maintenance/RefreshSocialCards.php --force
+```
+
+Use this after changing a transcluded infobox template, replacing an uploaded photo, editing the card template/fonts, or changing the canonical host. These changes alone do not invoke article-save hooks. The normal refresh path hashes current inputs and skips unchanged cards; `--force` also replaces valid cached images.
+
+### Card privacy and validation
+
+Generated storage is blocked by Apache. Advertised `/social-cards/<page-id>/<sha>.png` URLs pass through MediaWiki and check that the article still exists, remains publicly readable, and still advertises that hash. Moving a page out of `Public:` or deleting it revokes publication; old hashes and direct storage paths cannot bypass these checks. Image responses use `Cache-Control: no-store`. Copies already downloaded by third-party preview services cannot be recalled. This protection applies to the generated card copies, not MediaWiki's existing uploaded-file URLs.
+
+Run `npm test` for repository quality and renderer tests. The Docker build runs PHP integration tests covering extraction, hashing, PNG validation, process limits, and storage. Renderer input is limited to 4 MiB, output to 8 MiB, and each PHP-managed process to 15 seconds. Subprocess failures report identifiers and safe errors rather than article payloads.

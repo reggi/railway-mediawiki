@@ -54,6 +54,11 @@ $wgFileExtensions[] = 'mp4';
 
 wfLoadExtension( 'ImageMetadataSanitizer' );
 wfLoadExtension( 'Cite' );
+wfLoadExtension( 'SocialCards' );
+wfLoadExtension( 'WikiSEO' );
+$wgWikiSeoEnableAutoDescription = false;
+$wgWikiSeoEnableSocialImages = false;
+$wgWikiSeoDisableLogoFallbackImage = true;
 $wgLocalFileRepo['class'] = MediaWiki\Extension\ImageMetadataSanitizer\SanitizingLocalRepo::class;
 
 $wgSecretKey = $requiredEnvironmentVariable( 'MW_SECRET_KEY' );
@@ -67,6 +72,7 @@ $wgGroupPermissions['user']['read'] = true;
 $wgGroupPermissions['user']['edit'] = true;
 $wgWhitelistRead = [ 'Special:UserLogin' ];
 $wgWhitelistReadRegexp = [ '/^Public:/i' ];
+$wgWhitelistReadRegexp[] = '/^Special:SocialCard(?:\/|$)/';
 
 define( 'NS_PUBLIC', 3000 );
 define( 'NS_PUBLIC_TALK', 3001 );
