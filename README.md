@@ -10,7 +10,7 @@ The Dockerfile adds the PostgreSQL PHP extension, ExifTool, ImageMagick, Node.js
 
 Article links use `/wiki/Page_Title` instead of exposing `index.php` in normal URLs.
 
-MobileFrontend automatically selects MinervaNeue for phones, matching Wikipedia's mobile skin. Lead paragraphs appear before infoboxes in both the main and `Public:` namespaces. Vector 2022 remains responsive when readers choose desktop view, with `$wgVectorResponsive = true`. Its Appearance menu and table of contents sidebar are collapsed by default. Readers can still open or pin either one; saved user preferences take precedence over these defaults.
+MobileFrontend automatically selects MinervaNeue for phones, matching Wikipedia's mobile skin. Lead paragraphs appear before infoboxes in both the main and `Public:` namespaces. On Minerva screens narrower than 720px, infoboxes use the full content width without floating beside section headings. Vector 2022 remains responsive when readers choose desktop view, with `$wgVectorResponsive = true`. Its Appearance menu and table of contents sidebar are collapsed by default. Readers can still open or pin either one; saved user preferences take precedence over these defaults.
 
 Article headings include a small `#` permalink to their section fragment, which readers can follow or copy.
 

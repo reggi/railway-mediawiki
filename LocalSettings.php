@@ -183,6 +183,7 @@ $wgHooks['BeforePageDisplay'][] = static function (
 		'#ca-talk, #ca-talk-sticky-header { display: none !important; }'
 	);
 	$outputPage->addModules( 'site.headingLinks' );
+	$outputPage->addModuleStyles( 'site.mobileInfobox' );
 
 	if ( $title->getNamespace() === NS_PUBLIC ) {
 		$outputPage->setPageTitle( $title->getText() );
@@ -194,6 +195,13 @@ $wgResourceModules['site.headingLinks'] = [
 	'remoteBasePath' => $wgScriptPath . '/site-resources',
 	'scripts' => [ 'heading-links.js' ],
 	'styles' => [ 'heading-links.css' ],
+	'targets' => [ 'desktop', 'mobile' ],
+];
+
+$wgResourceModules['site.mobileInfobox'] = [
+	'localBasePath' => __DIR__ . '/site-resources',
+	'remoteBasePath' => $wgScriptPath . '/site-resources',
+	'styles' => [ 'mobile-infobox.css' ],
 	'targets' => [ 'desktop', 'mobile' ],
 ];
 
