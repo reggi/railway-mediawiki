@@ -198,6 +198,7 @@ $wgCookieSecure = str_starts_with( $wgServer, 'https://' );
 
 wfLoadSkin( 'Vector' );
 $wgDefaultSkin = 'vector-2022';
+$wgVectorResponsive = true;
 $wgDefaultUserOptions['vector-appearance-pinned'] = 0;
 $wgDefaultUserOptions['vector-toc-pinned'] = 0;
 

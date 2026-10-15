@@ -10,7 +10,7 @@ The Dockerfile adds the PostgreSQL PHP extension, ExifTool, ImageMagick, Node.js
 
 Article links use `/wiki/Page_Title` instead of exposing `index.php` in normal URLs.
 
-The Appearance menu and table of contents sidebar are collapsed by default in Vector 2022. Readers can still open or pin either one; saved user preferences take precedence over these defaults.
+Vector 2022 has responsive layouts enabled with `$wgVectorResponsive = true`, so it adapts to phone screens without switching skins. The Appearance menu and table of contents sidebar are collapsed by default. Readers can still open or pin either one; saved user preferences take precedence over these defaults.
 
 Article headings include a small `#` permalink to their section fragment, which readers can follow or copy.
 
