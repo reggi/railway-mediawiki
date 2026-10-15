@@ -23,7 +23,8 @@
   },
   "ResourceModules": {
     "ext.publicHome": {
-      "styles": ["resources/home.css"]
+      "styles": ["resources/home.css"],
+      "targets": ["desktop", "mobile"]
     }
   },
   "ResourceFileModulePaths": {

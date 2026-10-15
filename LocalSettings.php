@@ -59,6 +59,7 @@ wfLoadExtension( 'PublicArticleUrls' );
 wfLoadExtension( 'SocialCards' );
 wfLoadExtension( 'WikiSEO' );
 wfLoadExtension( 'PublicHome' );
+wfLoadExtension( 'MobileFrontend' );
 $wgWikiSeoEnableAutoDescription = false;
 $wgWikiSeoEnableSocialImages = false;
 $wgWikiSeoDisableLogoFallbackImage = true;
@@ -82,6 +83,7 @@ define( 'NS_PUBLIC', 3000 );
 define( 'NS_PUBLIC_TALK', 3001 );
 $wgExtraNamespaces[NS_PUBLIC] = 'Public';
 $wgExtraNamespaces[NS_PUBLIC_TALK] = 'Public_talk';
+$wgMFNamespacesWithLeadParagraphs = [ NS_MAIN, NS_PUBLIC ];
 
 $talkNamespaces = [
 	NS_TALK,
@@ -192,12 +194,15 @@ $wgResourceModules['site.headingLinks'] = [
 	'remoteBasePath' => $wgScriptPath . '/site-resources',
 	'scripts' => [ 'heading-links.js' ],
 	'styles' => [ 'heading-links.css' ],
+	'targets' => [ 'desktop', 'mobile' ],
 ];
 
 $wgCookieSecure = str_starts_with( $wgServer, 'https://' );
 
 wfLoadSkin( 'Vector' );
+wfLoadSkin( 'MinervaNeue' );
 $wgDefaultSkin = 'vector-2022';
+$wgDefaultMobileSkin = 'minerva';
 $wgVectorResponsive = true;
 $wgDefaultUserOptions['vector-appearance-pinned'] = 0;
 $wgDefaultUserOptions['vector-toc-pinned'] = 0;

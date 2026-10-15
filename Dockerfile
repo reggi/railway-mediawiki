@@ -9,6 +9,13 @@ RUN chmod 0755 generate.mjs \
 
 FROM mediawiki:stable
 
+RUN mobileFrontendBranch="REL$(printf '%s' "$MEDIAWIKI_MAJOR_VERSION" | tr '.' '_')" \
+    && curl -fsSL "https://codeload.github.com/wikimedia/mediawiki-extensions-MobileFrontend/tar.gz/refs/heads/${mobileFrontendBranch}" -o /tmp/mobilefrontend.tar.gz \
+    && mkdir -p /var/www/html/extensions/MobileFrontend \
+    && tar -xzf /tmp/mobilefrontend.tar.gz --strip-components=1 -C /var/www/html/extensions/MobileFrontend \
+    && rm /tmp/mobilefrontend.tar.gz \
+    && test -f /var/www/html/skins/MinervaNeue/skin.json
+
 RUN apt-get update \
     && apt-get install -y --no-install-recommends imagemagick libimage-exiftool-perl libpq-dev \
     && docker-php-ext-install pgsql \

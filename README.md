@@ -1,16 +1,16 @@
 # Railway MediaWiki
 
-Reusable Railway deployment for a private MediaWiki instance using the official `mediawiki:stable` image, Railway managed PostgreSQL, persistent uploads, and the Vector 2022 skin.
+Reusable Railway deployment for a private MediaWiki instance using the official `mediawiki:stable` image, Railway managed PostgreSQL, persistent uploads, Vector 2022 on desktop, and MinervaNeue on mobile.
 
 ## Architecture
 
 The Railway project is defined in `.railway/railway.ts`. It creates one MediaWiki service from this repository, one managed PostgreSQL database, one persistent volume mounted at `/var/www/html/images`, generated MediaWiki secrets, and generated initial administrator credentials.
 
-The Dockerfile adds the PostgreSQL PHP extension, ExifTool, ImageMagick, Node.js 24, WikiSEO, and the bundled image metadata sanitizer and social-card extensions to the official image. `LocalSettings.php` reads deployment configuration from environment variables, enables uploads, selects Vector 2022, disables public account creation, and requires authentication to read or edit the wiki.
+The Dockerfile adds the PostgreSQL PHP extension, ExifTool, ImageMagick, Node.js 24, WikiSEO, MobileFrontend, and the bundled image metadata sanitizer and social-card extensions to the official image. MobileFrontend uses the release branch matching the image's MediaWiki major version. `LocalSettings.php` reads deployment configuration from environment variables, enables uploads, selects Vector 2022 on desktop and the bundled MinervaNeue skin on mobile, disables public account creation, and requires authentication to read or edit the wiki.
 
 Article links use `/wiki/Page_Title` instead of exposing `index.php` in normal URLs.
 
-Vector 2022 has responsive layouts enabled with `$wgVectorResponsive = true`, so it adapts to phone screens without switching skins. The Appearance menu and table of contents sidebar are collapsed by default. Readers can still open or pin either one; saved user preferences take precedence over these defaults.
+MobileFrontend automatically selects MinervaNeue for phones, matching Wikipedia's mobile skin. Lead paragraphs appear before infoboxes in both the main and `Public:` namespaces. Vector 2022 remains responsive when readers choose desktop view, with `$wgVectorResponsive = true`. Its Appearance menu and table of contents sidebar are collapsed by default. Readers can still open or pin either one; saved user preferences take precedence over these defaults.
 
 Article headings include a small `#` permalink to their section fragment, which readers can follow or copy.
 

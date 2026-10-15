@@ -2,6 +2,8 @@
 
 namespace MediaWiki\Extension\PublicArticleUrls;
 
+use DOMDocument;
+use DOMXPath;
 use MediaWiki\Content\WikitextContent;
 use MediaWiki\Maintenance\Maintenance;
 use MediaWiki\Title\Title;
@@ -30,6 +32,21 @@ class Integration extends Maintenance {
 		$this->check( str_contains( $response['body'], "rel=\"canonical\" href=\"{$origin}/wiki/Clean_URL_test\"" ), 'Canonical URL is not clean: ' . ( $canonical[0] ?? 'missing' ) );
 		$this->check( str_contains( $this->request( '/wiki/Public:Clean_URL_test' )['body'], 'Public introduction for the clean URL.' ), 'Namespaced URL stopped working.' );
 
+		$save( 'Public:Mobile infobox test',
+			"{| class=\"infobox\" style=\"float:right; width:300px\"\n| Mobile infobox sentinel.\n|}\nMobile lead paragraph sentinel.\n\n== Body ==\nArticle body." );
+		$desktop = $this->request( '/wiki/Mobile_infobox_test' );
+		$this->check( str_contains( $desktop['body'], 'skin-vector-2022' ), 'Desktop skin changed.' );
+		$mobile = $this->request( '/wiki/Mobile_infobox_test',
+			'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1' );
+		$this->check( $mobile['status'] === 200 && str_contains( $mobile['body'], 'skin-minerva' ), 'Phone did not select MinervaNeue.' );
+		$document = new DOMDocument();
+		$this->check( $document->loadHTML( $mobile['body'], LIBXML_NOERROR | LIBXML_NOWARNING ), 'Mobile HTML could not be parsed.' );
+		$xpath = new DOMXPath( $document );
+		$this->check( $xpath->query(
+			'//table[contains(concat(" ", normalize-space(@class), " "), " infobox ")]/preceding-sibling::p[normalize-space(.) = "Mobile lead paragraph sentinel."]'
+		)->length === 1,
+			'Public mobile article did not place its lead before the infobox.' );
+
 		$save( 'Clean URL test', '#REDIRECT [[Public:Clean URL test]]' );
 		$this->check( str_contains( $this->request( '/wiki/Clean_URL_test' )['body'], 'Public introduction for the clean URL.' ), 'Existing public redirect cannot be used as a clean alias.' );
 		$save( 'Clean URL test', 'Private main namespace content must remain private.' );
@@ -55,9 +72,13 @@ class Integration extends Maintenance {
 		}
 	}
 
-	private function request( string $path ): array {
+	private function request( string $path, string $userAgent = 'MediaWiki integration test' ): array {
 		$origin = getenv( 'SOCIAL_CARDS_TEST_ORIGIN' ) ?: 'http://127.0.0.1:8080';
-		$context = stream_context_create( [ 'http' => [ 'ignore_errors' => true, 'timeout' => 15 ] ] );
+		$context = stream_context_create( [ 'http' => [
+			'ignore_errors' => true,
+			'timeout' => 15,
+			'user_agent' => $userAgent,
+		] ] );
 		$body = file_get_contents( $origin . $path, false, $context );
 		if ( $body === false ) {
 			throw new RuntimeException( 'HTTP test request failed.' );
