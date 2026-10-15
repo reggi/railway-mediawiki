@@ -10,7 +10,7 @@ The Dockerfile adds the PostgreSQL PHP extension, ExifTool, ImageMagick, Node.js
 
 Article links use `/wiki/Page_Title` instead of exposing `index.php` in normal URLs.
 
-The Appearance menu and table of contents sidebar are collapsed by default in Vector 2022. Readers can still open or pin either one; saved user preferences take precedence over these defaults.
+Vector 2022 has responsive layouts enabled with `$wgVectorResponsive = true`, so it adapts to phone screens without switching skins. The Appearance menu and table of contents sidebar are collapsed by default. Readers can still open or pin either one; saved user preferences take precedence over these defaults.
 
 Article headings include a small `#` permalink to their section fragment, which readers can follow or copy.
 
@@ -94,4 +94,4 @@ Use this after changing a transcluded infobox template, replacing an uploaded ph
 
 Generated storage is blocked by Apache. Advertised `/social-cards/<page-id>/<sha>.png` URLs pass through MediaWiki and check that the article still exists, remains publicly readable, and still advertises that hash. Moving a page out of `Public:` or deleting it revokes publication; old hashes and direct storage paths cannot bypass these checks. Image responses use `Cache-Control: no-store`. Copies already downloaded by third-party preview services cannot be recalled. This protection applies to the generated card copies, not MediaWiki's existing uploaded-file URLs.
 
-Run `npm test` for repository quality and renderer tests. The Docker build runs PHP integration tests covering extraction, hashing, PNG validation, process limits, and storage. Renderer input is limited to 4 MiB, output to 8 MiB, and each PHP-managed process to 15 seconds. Subprocess failures report identifiers and safe errors rather than article payloads.
+Run `npm test` for repository quality and renderer tests. Project-specific test scripts are declared as `package-standards` overrides in `.knitto.json` so template compliance preserves them. The Docker build runs PHP integration tests covering extraction, hashing, PNG validation, process limits, and storage. Renderer input is limited to 4 MiB, output to 8 MiB, and each PHP-managed process to 15 seconds. Subprocess failures report identifiers and safe errors rather than article payloads.
