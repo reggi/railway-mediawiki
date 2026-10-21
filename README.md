@@ -30,6 +30,12 @@ railway domain --service MediaWiki
 
 The domain command creates a Railway provided `up.railway.app` domain. The first successful deployment initializes the PostgreSQL schema and creates the administrator. Railway generates `MW_ADMIN_PASSWORD`; retrieve its value from the MediaWiki service variables and sign in with the `MW_ADMIN_USER` value, which defaults to `Admin`.
 
+## PHP runtime security
+
+The MediaWiki base image is pinned by digest. Its Linux amd64 image, used by Railway, contains PHP 8.3.36. The build rejects PHP versions below the fixes for [CVE-2026-109618](https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w) and [CVE-2026-109619](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp): PHP 8.2.35, 8.3.36, 8.4.27, or 8.5.12 in their respective branches. This check also rejects unpatched architecture variants in the pinned image. Other branches require a review and an update to the build check.
+
+When updating the image digest, verify the PHP runtime version in the replacement image. Rebuild and deploy the image to replace the running Apache workers. Changing this repository or restarting an existing container does not update its PHP runtime. MediaWiki authentication and application updates do not protect an unpatched runtime because an attack can occur before application code runs. Configuration changes and WAF rules are not complete fixes.
+
 ## Configuration
 
 The default nonsecret settings are declared in `.railway/railway.ts`. Change the site name, administrator username, language, or timezone there before applying the project. Railway generates `MW_ADMIN_PASSWORD`, `MW_SECRET_KEY`, and `MW_UPGRADE_KEY` server side, so no secrets are committed.

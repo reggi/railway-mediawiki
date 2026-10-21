@@ -7,7 +7,9 @@ COPY social-cards/generate.mjs social-cards/template.mjs ./
 RUN chmod 0755 generate.mjs \
     && node generate.mjs --fingerprint > fingerprint
 
-FROM mediawiki:stable
+FROM mediawiki:stable@sha256:276fd8c601efd6a607747f5b0a9de4649b80d4927b905fba0e77a62c0adf4af7
+
+RUN php -r '$minimum = [802 => 80235, 803 => 80336, 804 => 80427, 805 => 80512]; $branch = PHP_MAJOR_VERSION * 100 + PHP_MINOR_VERSION; if (!isset($minimum[$branch]) || PHP_VERSION_ID < $minimum[$branch]) { fwrite(STDERR, "PHP " . PHP_VERSION . " does not meet the PHP2Shell security baseline.\n"); exit(1); }'
 
 RUN mobileFrontendBranch="REL$(printf '%s' "$MEDIAWIKI_MAJOR_VERSION" | tr '.' '_')" \
     && curl -fsSL "https://codeload.github.com/wikimedia/mediawiki-extensions-MobileFrontend/tar.gz/refs/heads/${mobileFrontendBranch}" -o /tmp/mobilefrontend.tar.gz \
