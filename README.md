@@ -1,12 +1,12 @@
 # Railway MediaWiki
 
-Reusable Railway deployment for a private MediaWiki instance using the official `mediawiki:stable` image, Railway managed PostgreSQL, persistent uploads, Vector 2022 on desktop, and MinervaNeue on mobile.
+Reusable Railway deployment for a private MediaWiki instance using the official `mediawiki:1.46.2` image pinned by digest, Railway managed PostgreSQL, persistent uploads, Vector 2022 on desktop, and MinervaNeue on mobile.
 
 ## Architecture
 
 The Railway project is defined in `.railway/railway.ts`. It creates one MediaWiki service from this repository, one managed PostgreSQL database, one persistent volume mounted at `/var/www/html/images`, generated MediaWiki secrets, and generated initial administrator credentials.
 
-The Dockerfile adds the PostgreSQL PHP extension, ExifTool, ImageMagick, Node.js 24, WikiSEO, MobileFrontend, and the bundled image metadata sanitizer and social-card extensions to the official image. MobileFrontend uses the release branch matching the image's MediaWiki major version. `LocalSettings.php` reads deployment configuration from environment variables, enables uploads, selects Vector 2022 on desktop and the bundled MinervaNeue skin on mobile, disables public account creation, and requires authentication to read or edit the wiki.
+The Dockerfile adds the PostgreSQL PHP extension, ExifTool, ImageMagick, Node.js 24, WikiSEO, MobileFrontend, and the bundled image metadata sanitizer and social-card extensions to the official image. The Node.js image is pinned by version and digest. WikiSEO and MobileFrontend are pinned to commits; the MobileFrontend commit is from the `REL1_46` branch for MediaWiki 1.46. Update this extension pin when changing the MediaWiki release branch. External dependencies are installed before local files are copied so that local edits can reuse cached dependency layers. PostgreSQL development files are removed after the PHP extension is compiled; its runtime library is retained. `LocalSettings.php` reads deployment configuration from environment variables, enables uploads, selects Vector 2022 on desktop and the bundled MinervaNeue skin on mobile, disables public account creation, and requires authentication to read or edit the wiki.
 
 Article links use `/wiki/Page_Title` instead of exposing `index.php` in normal URLs.
 
@@ -32,9 +32,9 @@ The domain command creates a Railway provided `up.railway.app` domain. The first
 
 ## PHP runtime security
 
-The MediaWiki base image is pinned by digest. Its Linux amd64 image, used by Railway, contains PHP 8.3.36. The build rejects PHP versions below the fixes for [CVE-2026-109618](https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w) and [CVE-2026-109619](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp): PHP 8.2.35, 8.3.36, 8.4.27, or 8.5.12 in their respective branches. This check also rejects unpatched architecture variants in the pinned image. Other branches require a review and an update to the build check.
+The MediaWiki base image is pinned by version and digest. All six Linux architecture variants in this image contain PHP 8.3.36, including amd64 used by Railway. This PHP release includes the official fixes for [CVE-2026-109618](https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w) and [CVE-2026-109619](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp); no local PHP patch is applied. The build does not use a separate PHP version guard. Review the current PHP security advisories when updating the image.
 
-When updating the image digest, verify the PHP runtime version in the replacement image. Rebuild and deploy the image to replace the running Apache workers. Changing this repository or restarting an existing container does not update its PHP runtime. MediaWiki authentication and application updates do not protect an unpatched runtime because an attack can occur before application code runs. Configuration changes and WAF rules are not complete fixes.
+When updating the image version or digest, verify the PHP runtime version in each required architecture of the replacement image. Rebuild and deploy the image to replace the running Apache workers. Changing this repository or restarting an existing container does not update its PHP runtime. MediaWiki authentication and application updates do not protect an unpatched runtime because an attack can occur before application code runs. Configuration changes and WAF rules are not complete fixes.
 
 ## Configuration
 
